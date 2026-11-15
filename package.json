@@ -1,0 +1,121 @@
+{
+  "name": "orcadev",
+  "displayName": "OrcaDev",
+  "description": "AI coding agent panel for VS Code: streaming chat, file and shell tools, diff previews and per-action approvals. Bring your own Anthropic API key.",
+  "version": "0.3.0",
+  "publisher": "poseidon-05",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/PoSeIDoN-05/orcadev.git" },
+  "homepage": "https://github.com/PoSeIDoN-05/orcadev#readme",
+  "bugs": { "url": "https://github.com/PoSeIDoN-05/orcadev/issues" },
+  "icon": "media/icon.png",
+  "keywords": ["ai", "agent", "chat", "assistant", "anthropic", "claude", "coding", "autonomous"],
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["AI", "Other"],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "OrcaDev can read and write files and run shell commands in the workspace, so it is disabled in untrusted workspaces."
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "OrcaDev needs real files and a shell on disk."
+    }
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "orcaDev",
+          "title": "OrcaDev",
+          "icon": "media/orca-dev.svg"
+        }
+      ]
+    },
+    "views": {
+      "orcaDev": [
+        { "type": "webview", "id": "orcaDev.chat", "name": "Chat" }
+      ]
+    },
+    "commands": [
+      { "command": "orcaDev.newSession", "title": "OrcaDev: New Chat", "icon": "$(add)" },
+      { "command": "orcaDev.stop", "title": "OrcaDev: Stop", "icon": "$(debug-stop)" },
+      { "command": "orcaDev.chooseModel", "title": "OrcaDev: Choose Model" },
+      { "command": "orcaDev.setApiKey", "title": "OrcaDev: Set API Key" },
+      { "command": "orcaDev.clearApiKey", "title": "OrcaDev: Remove Stored API Key" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "orcaDev.newSession", "when": "view == orcaDev.chat", "group": "navigation@1" },
+        { "command": "orcaDev.stop", "when": "view == orcaDev.chat", "group": "navigation@2" }
+      ]
+    },
+    "configuration": {
+      "title": "OrcaDev",
+      "properties": {
+        "orcaDev.model": {
+          "type": "string",
+          "default": "claude-sonnet-5-5",
+          "description": "Model id. Easier to pick with the command \"OrcaDev: Choose Model\" (the list comes from /v1/models)."
+        },
+        "orcaDev.baseUrl": {
+          "type": "string",
+          "default": "https://api.anthropic.com",
+          "description": "API base URL (set your own gateway here if you use one)."
+        },
+        "orcaDev.proxy": {
+          "type": "string",
+          "default": "",
+          "description": "HTTP proxy for API requests, for example http://127.0.0.1:3128. Empty means direct connection."
+        },
+        "orcaDev.maxTokens": {
+          "type": "number",
+          "default": 8192,
+          "description": "Maximum tokens in a single model response."
+        },
+        "orcaDev.maxSteps": {
+          "type": "number",
+          "default": 25,
+          "description": "Maximum agent steps (model calls) per user message."
+        },
+        "orcaDev.contextFiles": {
+          "type": "number",
+          "default": 40,
+          "description": "How many workspace files to list in the system prompt (0 disables it)."
+        },
+        "orcaDev.autoApprove": {
+          "type": "boolean",
+          "default": false,
+          "description": "Do not ask for confirmation before tools run. Warning: this lets the agent run shell commands without asking."
+        },
+        "orcaDev.systemPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "Extra instructions appended to the system prompt."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node node_modules\\esbuild\\bin\\esbuild scripts\\smoke.ts --bundle --platform=node --format=cjs --outfile=dist-test\\smoke.cjs --log-level=warning && node dist-test\\smoke.cjs",
+    "e2e": "node node_modules\\esbuild\\bin\\esbuild scripts\\e2e.ts --bundle --platform=node --format=cjs --outfile=dist-test\\e2e.cjs --log-level=warning && node dist-test\\e2e.cjs",
+    "activate": "node esbuild.mjs && node scripts/activate.cjs",
+    "package": "node esbuild.mjs && node node_modules\\@vscode\\vsce\\vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.1",
+    "undici": "^6.19.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^2.32.0",
+    "esbuild": "^0.23.1",
+    "typescript": "^5.5.4"
+  }
+}
